@@ -119,6 +119,11 @@ local function draw_trunk(self)
                 l1.x,l1.y, r1.x,r1.y,
                 r0.x,r0.y, l0.x,l0.y
             )
+
+            if self.dirty then
+                self.dirty = false
+                self.working_pos = p0:clone()
+            end
         end
 
         if i>self.fall_branch then
@@ -128,7 +133,7 @@ local function draw_trunk(self)
 end
 
 function Tree_MT.draw(self)
-    lg.setColor(.5, .9, .1, 1)
+    lg.setColor(.4, .26, .13, 1)
     draw_trunk(self)
 end
 
@@ -144,6 +149,7 @@ function Tree_MT.damage(self)
 
     elseif self.state==TREE_CLEAN then
         self.chopped = self.chopped + 1
+        self.dirty   = true
         if self.chopped > TREE_SEGMENTS then
             self.state  = TREE_CHOPPED
             self.active = false
@@ -152,9 +158,7 @@ function Tree_MT.damage(self)
 end
 
 local function new(x,y,base_trunk_h)
-    local base_len = TREE_BASE_LEN
     local base_dir = (math.random()>=0.5) and 1 or -1
-    local height = base_trunk_h
     
     local tree   = {}
 
@@ -169,21 +173,20 @@ local function new(x,y,base_trunk_h)
     tree.pos = vector.new(x,y)
     tree.segments = {}
 
+    tree.dirty = false
+    tree.working_pos = tree.pos
+    
     local offset  = (15+math.random()*5 * _2RAD)*base_dir
     local segment = vector.from_angle(offset)
     table.insert(tree.segments, segment)
 
     for i=1, TREE_SEGMENTS do
-        base_len = base_len * TREE_LEN_DEC1
-        height = height + base_len
-
         base_dir = base_dir *-1
         offset   = (15+math.random()*5 * _2RAD)*base_dir
         segment  = vector.from_angle(offset)
         
         table.insert(tree.segments, segment)
     end
-    tree._canvas = lg.newCanvas(TREE_BASE_LEN*2, height)
 
     setmetatable(tree, Tree_MT)
     return tree

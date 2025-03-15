@@ -37,10 +37,10 @@ end
 function Player_MT.update(self, dt)
     if self.pos == self.target then
         for _,it in ipairs(self.game.entities) do
-            local abs_len = self.pos:distance(it.pos)
+            local abs_len = (self~=it) and self.pos:distance(it.working_pos)
 
             self.mytree =
-                (self ~= it and abs_len < 30 and it.active) and it or nil
+                (abs_len and abs_len < 30 and it.active) and it or nil
 
             if self.mytree then break end
         end return
@@ -55,7 +55,7 @@ function Player_MT.update(self, dt)
     self.pos:add(self.vel:mul(400 * dt, pool[1]), pool[2])
     pool[2]:clone(self.pos)
     
-    if abs_len <= self.bounds.h*0.3 then
+    if abs_len <= (self.bounds.h*self.bounds.h)*0.1 then
         self.target:clone(self.pos)
     end
 end
@@ -80,9 +80,10 @@ end
 function Player_MT.on_mousepressed(self,x,y,btn)
     local pool = _player_vector_pool
     pool[4].x, pool[4].y = x, y
-    local dist = self.mytree and math.abs(self.mytree.pos:distance(pool[4]))
+    local dist = self.mytree and
+        math.abs(self.mytree.working_pos:distance(pool[4]))
     
-    if self.mytree and dist and dist < 30 then
+    if dist and dist < 30 then
         self.mytree:damage()
     else
         self:set_target(x, y)
