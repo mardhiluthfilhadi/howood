@@ -54,7 +54,9 @@ function Game_MT.update(self, dt)
     self._offsety = (sw < sh) and
         sh/2 - (self.height * self._screen_to_world)/2 or 0
 
-    self.player:update(dt)
+    for _,it in ipairs(self.entities) do
+        it:update(dt)
+    end
     table.sort(self.entities, function(a,b)
         return a.pos.y < b.pos.y
     end)

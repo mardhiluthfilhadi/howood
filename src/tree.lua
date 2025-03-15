@@ -18,6 +18,12 @@ end
 local Tree_MT = {}
 Tree_MT.__index = Tree_MT
 
+function Tree_MT.update(self, dt)
+    if self.health <= 0 then
+        self.base_trunk_a = self.base_trunk_a + dt
+    end
+end
+
 local function draw_branch(p, angle, len)
     local pool = _tree_vector_pool
     
@@ -46,9 +52,9 @@ local function draw_trunk(self)
     local l1 = pool[5]
     local r1 = pool[6]
 
-    self.pos:clone(p0)
+    self.pos:clone(p0)    
     self.pos:add(
-        p1:set_length(self.base_trunk_h):set_angle(_90_DEG_ANGLE), p1
+        p1:set_length(self.base_trunk_h):set_angle(self.base_trunk_a), p1
     )
 
     p0:clone(l0).x = p0.x-base_wide
@@ -95,11 +101,19 @@ function Tree_MT.draw(self)
     draw_trunk(self)
 end
 
+function Tree_MT.damage(self)
+    self.health = self.health - 1
+end
+
 local function new(x,y,base_trunk_h)
+    local base_len = TREE_BASE_LEN
     local base_dir = (math.random()>=0.5) and 1 or -1
+    local height = base_trunk_h
     
     local tree = {}
+    tree.health = 3
     tree.base_trunk_h = base_trunk_h
+    tree.base_trunk_a = _90_DEG_ANGLE
 
     tree.pos = vector.new(x,y)
     tree.segments = {}
@@ -109,12 +123,16 @@ local function new(x,y,base_trunk_h)
     table.insert(tree.segments, segment)
 
     for i=1, TREE_SEGMENTS do
+        base_len = base_len * TREE_LEN_DEC1
+        height = height + base_len
+
         base_dir = base_dir *-1
         offset   = (15+math.random()*5 * _2RAD)*base_dir
         segment  = vector.from_angle(offset+_90_DEG_ANGLE)
         
         table.insert(tree.segments, segment)
     end
+    tree._canvas = lg.newCanvas(TREE_BASE_LEN*2, height)
 
     setmetatable(tree, Tree_MT)
     return tree
