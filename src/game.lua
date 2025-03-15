@@ -52,6 +52,7 @@ function Game_MT.update(self, dt)
         sh/2 - (self.height * self._screen_to_world)/2 or 0
 
     self.player:update(dt)
+    table.sort(self.entities, function(a,b) return a.pos.y < b.pos.y end)
 end
 
 function Game_MT.draw(self)
@@ -76,9 +77,12 @@ function Game_MT.keypressed(self, key)
 end
 
 function Game_MT.mousepressed(self, x, y, btn)
+    x = (x - self._offsetx) * self._world_to_screen
+    y = (y - self._offsety) * self._world_to_screen
+    
     if btn==1 then self.player:set_target(x,y) end
     if btn==2 then
-        local t = tree.new(x,y, 10)
+        local t = tree.new(x,y, 40 + math.random()*40)
         table.insert(self.entities, t)
     end
 end

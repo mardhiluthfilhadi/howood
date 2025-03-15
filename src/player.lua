@@ -6,7 +6,7 @@ local lg = love.graphics
 local vector = require "src.vector"
 
 local Player  = {}
-Player.bounds = {x=-25,y=-25, w=50,h=50}
+Player.bounds = {x=-15,y=-50, w=30,h=50}
 Player.pos    = vector.new()
 Player.vel    = vector.new(0,1)
 Player.target = vector.new()
@@ -42,7 +42,7 @@ function Player_MT.update(self, dt)
     self.pos:add(self.vel:mul(400 * dt, pool[1]), pool[2])
     pool[2]:clone(self.pos)
     
-    if abs_len <= self.bounds.w*0.3 then
+    if abs_len <= self.bounds.h*0.3 then
         self.target:clone(self.pos)
     end
 end
