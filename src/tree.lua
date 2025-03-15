@@ -25,10 +25,13 @@ Tree_MT.__index = Tree_MT
 
 function Tree_MT.update(self, dt)
     if self.state==TREE_STAND and self.health <= 0 then
-        self.base_trunk_a = self.base_trunk_a + 4*dt
+        local d = (self.pos.x >= 200) and (-4*dt) or (4*dt)
+        self.base_trunk_a = self.base_trunk_a + d
         
-        if  self.base_trunk_a >= -3*_2RAD and
-            10*_2RAD >= self.base_trunk_a
+        if (self.base_trunk_a >= -3*_2RAD and
+            10*_2RAD >= self.base_trunk_a) or
+           (self.base_trunk_a <= -177*_2RAD and
+            -190*_2RAD <= self.base_trunk_a)
         then
             self.state = TREE_FALLEN
         end
@@ -122,7 +125,7 @@ local function draw_trunk(self)
 
             if self.dirty then
                 self.dirty = false
-                self.working_pos = p0:clone()
+                p0:clone(self.working_pos)
             end
         end
 
@@ -174,7 +177,7 @@ local function new(x,y,base_trunk_h)
     tree.segments = {}
 
     tree.dirty = false
-    tree.working_pos = tree.pos
+    tree.working_pos = tree.pos:clone()
     
     local offset  = (15+math.random()*5 * _2RAD)*base_dir
     local segment = vector.from_angle(offset)

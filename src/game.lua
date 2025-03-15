@@ -38,6 +38,18 @@ function Game_MT.load(self)
         resizable  = resizable ,
         centered   = true      ,
     })
+
+    -- //////////////////////////////////////////// --
+    for i=1, 60 do
+        local t = tree.new(
+            math.random()*self.width,
+            math.random()*self.height/2,
+            40 + math.random()*40
+        )
+
+        table.insert(self.entities, t)
+    end
+    -- //////////////////////////////////////////// --
 end
 
 function Game_MT.update(self, dt)
