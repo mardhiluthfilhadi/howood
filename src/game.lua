@@ -13,6 +13,7 @@ Game.height = 400
 
 Game.entities = {require "src.player"}
 Game.player   = Game.entities[1]
+Game.player.game = Game
 
 Game._offsetx = 0
 Game._offsety = 0
@@ -24,6 +25,8 @@ local Game_MT = {}
 Game_MT.__index = Game_MT
 
 function Game_MT.load(self)
+    collectgarbage("stop")
+
     local fullscreen = OS == "Android" or  OS == "IOS"
     local resizable  = OS ~= "Android" and OS ~= "IOS"
     local sw,sh =
@@ -52,7 +55,9 @@ function Game_MT.update(self, dt)
         sh/2 - (self.height * self._screen_to_world)/2 or 0
 
     self.player:update(dt)
-    table.sort(self.entities, function(a,b) return a.pos.y < b.pos.y end)
+    table.sort(self.entities, function(a,b)
+        return a.pos.y < b.pos.y
+    end)
 end
 
 function Game_MT.draw(self)
@@ -70,6 +75,13 @@ function Game_MT.draw(self)
         self._canvas, self._offsetx, self._offsety, 0,
         self._screen_to_world, self._screen_to_world
     )
+
+    lg.setColor(1, .2, .2, .8)
+    lg.rectangle("fill", 0,0, 200, 70, 12)
+
+    lg.setColor(0,0,0,1)
+    lg.print("Garbage: " .. collectgarbage("count"), 20, 20)
+    lg.print("FPS: " .. love.timer.getFPS(), 20, 40)
 end
 
 function Game_MT.keypressed(self, key)
@@ -80,7 +92,7 @@ function Game_MT.mousepressed(self, x, y, btn)
     x = (x - self._offsetx) * self._world_to_screen
     y = (y - self._offsety) * self._world_to_screen
     
-    if btn==1 then self.player:set_target(x,y) end
+    if btn==1 then self.player:on_mousepressed(x,y) end
     if btn==2 then
         local t = tree.new(x,y, 40 + math.random()*40)
         table.insert(self.entities, t)

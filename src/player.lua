@@ -11,13 +11,16 @@ Player.pos    = vector.new()
 Player.vel    = vector.new(0,1)
 Player.target = vector.new()
 
+Player.game   = nil
+Player.mytree = nil
+
 Player.health = 100
 Player.energy = 100
 Player.body_hidration  = 100
 Player.body_temperature = 30
 
 local _player_vector_pool = {}
-for i=1,3 do
+for i=1,5 do
     table.insert(_player_vector_pool, vector.new())
 end
 
@@ -32,8 +35,15 @@ function Player_MT.get_bounds(self)
 end
 
 function Player_MT.update(self, dt)
-    if self.pos == self.target then return end
+    if self.pos == self.target then
+        for _,it in ipairs(self.game.entities) do
+            local abs_len = self.pos:distance(it.pos)
+            self.mytree = (self ~= it and abs_len < 30) and it or nil
+            if self.mytree then break end
+        end return
+    end
 
+    self.mytree = nil
     local abs_len = math.abs(
         self.pos:distance_squared(self.target)
     )
@@ -59,6 +69,21 @@ function Player_MT.draw(self)
     
     lg.setColor(1, 0x18/0xff, 0x18/0xff, 1)
     lg.rectangle("fill", x,y,w,h, 4)
+
+    lg.setColor(0,0,0)
+    lg.print(tostring(self.mytree), x, y)
+end
+
+function Player_MT.on_mousepressed(self,x,y,btn)
+    local pool = _player_vector_pool
+    pool[4].x, pool[4].y = x, y
+    local dist = self.mytree and math.abs(self.mytree.pos:distance(pool[4]))
+    
+    if self.mytree and dist and dist < 30 then
+        self.mytree:damage()
+    else
+        self:set_target(x, y)
+    end
 end
 
 setmetatable(Player, Player_MT)
