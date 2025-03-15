@@ -20,6 +20,35 @@ for i=1,12 do
     table.insert(_tree_vector_pool, vector.new())
 end
 
+local TREE_SHADER = lg.newShader([[
+    extern float angle; // Angle in radians to tilt the bark pattern
+
+    vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) {
+        // Scale the coordinates to control pattern density
+        vec2 uv = screen_coords * 0.05; // Smaller patterns for 10x70 rectangle
+
+        // Rotate the UV coordinates based on the angle parameter
+        float s = sin(angle);
+        float c = cos(angle);
+        uv = vec2(c * uv.x - s * uv.y, s * uv.x + c * uv.y);
+
+        // Create linear grooves using sine waves
+        float grooves = abs(sin(uv.y * 30.0)) * 0.6;
+
+        // Combine grooves for noticeable bark texture
+        float barkPattern = step(0.6, fract(uv.x + grooves));
+
+        // Define tree bark colors (e.g., shades of brown)
+        vec3 darkBrown = vec3(0.3, 0.15, 0.1);
+        vec3 lightBrown = vec3(0.5, 0.3, 0.2);
+
+        // Blend colors based on the bark pattern
+        vec3 treeBarkColor = mix(darkBrown, lightBrown, barkPattern);
+
+        return vec4(treeBarkColor, 1.0); // Final output color
+    }
+]])
+
 local Tree_MT = {}
 Tree_MT.__index = Tree_MT
 
@@ -85,6 +114,10 @@ local function draw_trunk(self)
     r1:set_angle(self.base_trunk_a+_90_DEG_ANGLE):set_length(base_wide)
     p1:add(r1, r1)
 
+    local s = lg.getShader()
+
+    TREE_SHADER:send("angle", self.base_trunk_a)
+    lg.setShader(TREE_SHADER)
     if self.chopped < 1 then
         lg.polygon(
             "fill",
@@ -116,6 +149,8 @@ local function draw_trunk(self)
         r1:set_angle(angle+_90_DEG_ANGLE):set_length(base_wide)
         p1:add(r1, r1)
 
+        TREE_SHADER:send("angle", angle)
+        lg.setShader(TREE_SHADER)
         if i>self.chopped-1 then
             lg.polygon(
                 "fill",
@@ -129,6 +164,7 @@ local function draw_trunk(self)
             end
         end
 
+        lg.setShader(s)
         if i>self.fall_branch then
             draw_branch(p0, angle, base_len)
         end

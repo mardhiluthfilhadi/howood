@@ -11,6 +11,9 @@ local Game  = {}
 Game.width  = 400
 Game.height = 400
 
+Game.timer_a  = 0
+Game.clock    = 0
+Game.hardness = 1
 Game.entities = {require "src.player"}
 Game.player   = Game.entities[1]
 Game.player.game = Game
@@ -43,16 +46,21 @@ function Game_MT.load(self)
     for i=1, 60 do
         local t = tree.new(
             math.random()*self.width,
-            math.random()*self.height/2,
+            200+math.random()*100,
             40 + math.random()*40
         )
 
         table.insert(self.entities, t)
     end
     -- //////////////////////////////////////////// --
+
+    self.timer_a = love.timer.getTime()
 end
 
 function Game_MT.update(self, dt)
+    local elapsed_sec = love.timer.getTime()-self.timer_a
+    self.clock = math.floor(elapsed_sec/30)
+    
     local sw,sh = lg.getDimensions()
     self._screen_to_world = (sw <= sh) and
         sw/self.width or sh/self.height
@@ -91,11 +99,12 @@ function Game_MT.draw(self)
     )
 
     lg.setColor(1, .2, .2, .8)
-    lg.rectangle("fill", 0,0, 200, 70, 12)
+    lg.rectangle("fill", 0,0, 200, 100, 12)
 
     lg.setColor(0,0,0,1)
     lg.print("Garbage: " .. collectgarbage("count"), 20, 20)
     lg.print("FPS: " .. love.timer.getFPS(), 20, 40)
+    lg.print("Clock: " .. self.clock, 20, 60)
 end
 
 function Game_MT.keypressed(self, key)
