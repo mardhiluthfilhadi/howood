@@ -72,6 +72,14 @@ function Vec_MT.length(v)
     return math.sqrt(v.x * v.x + v.y * v.y)
 end
 
+function Vec_MT.set_length(v, len)
+    local angle = v:angle()
+    v.x = math.cos(angle)*len
+    v.y = math.sin(angle)*len
+
+    return v
+end
+
 function Vec_MT.length_squared(v)
     return v.x * v.x + v.y * v.y
 end
@@ -189,6 +197,8 @@ function Vec_MT.set_angle(v, angle)
     local len = v:length()
     v.x = math.cos(angle)*len
     v.y = math.sin(angle)*len
+
+    return v
 end
 
 function Vec_MT.angle_between(v1, v2)

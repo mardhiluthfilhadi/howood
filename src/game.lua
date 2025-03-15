@@ -1,3 +1,5 @@
+local tree = require "src.tree"
+
 local le = love.event
 local ls = love.system
 local lw = love.window
@@ -9,7 +11,8 @@ local Game  = {}
 Game.width  = 400
 Game.height = 400
 
-Game.player = require "src.player"
+Game.entities = {require "src.player"}
+Game.player   = Game.entities[1]
 
 Game._offsetx = 0
 Game._offsety = 0
@@ -55,7 +58,9 @@ function Game_MT.draw(self)
     lg.setCanvas(self._canvas)
 
         lg.clear(0x18/0xff, 0x18/0xff, 0x18/0xff, 1)
-        self.player:draw()
+        for _,it in ipairs(self.entities) do
+            it:draw()
+        end
 
     lg.setCanvas()
 
@@ -71,7 +76,11 @@ function Game_MT.keypressed(self, key)
 end
 
 function Game_MT.mousepressed(self, x, y, btn)
-    self.player:set_target(x,y)
+    if btn==1 then self.player:set_target(x,y) end
+    if btn==2 then
+        local t = tree.new(x,y, 10)
+        table.insert(self.entities, t)
+    end
 end
 
 setmetatable(Game, Game_MT)
