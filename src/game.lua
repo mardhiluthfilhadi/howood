@@ -8,8 +8,8 @@ local lg = love.graphics
 local OS = ls.getOS()
 
 local Game  = {}
-Game.width  = 400
-Game.height = 400
+Game.width  = 600
+Game.height = 600
 
 Game.timer_a  = 0
 Game.clock    = 0
