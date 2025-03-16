@@ -11,11 +11,14 @@ local Game  = {}
 Game.width  = 600
 Game.height = 600
 
+Game.day      = 0
+Game.clock    = 23
+Game.minutes  = 0
 Game.timer_a  = 0
-Game.clock    = 0
 Game.hardness = 1
-Game.entities = {require "src.player"}
-Game.player   = Game.entities[1]
+
+Game.player   = require "src.player"
+Game.entities = {Game.player}
 Game.player.game = Game
 
 Game._offsetx = 0
@@ -42,24 +45,23 @@ function Game_MT.load(self)
         centered   = true      ,
     })
 
-    -- //////////////////////////////////////////// --
-    for i=1, 60 do
-        local t = tree.new(
-            math.random()*self.width,
-            200+math.random()*100,
-            40 + math.random()*40
-        )
-
-        table.insert(self.entities, t)
-    end
-    -- //////////////////////////////////////////// --
-
     self.timer_a = love.timer.getTime()
 end
 
 function Game_MT.update(self, dt)
     local elapsed_sec = love.timer.getTime()-self.timer_a
-    self.clock = math.floor(elapsed_sec/30)
+    local new_clock = math.floor(elapsed_sec/30)
+    self.minutes = elapsed_sec*2
+    
+    if new_clock > 0 then
+        self.clock = self.clock + 1
+        self.timer_a = love.timer.getTime()
+
+        if self.clock == 24 then
+            self.day = self.day + 1
+            self.clock = 0
+        end
+    end
     
     local sw,sh = lg.getDimensions()
     self._screen_to_world = (sw <= sh) and
@@ -104,7 +106,8 @@ function Game_MT.draw(self)
     lg.setColor(0,0,0,1)
     lg.print("Garbage: " .. collectgarbage("count"), 20, 20)
     lg.print("FPS: " .. love.timer.getFPS(), 20, 40)
-    lg.print("Clock: " .. self.clock, 20, 60)
+    local clock = string.format("Clock (%2d : %2d)", self.clock, self.minutes)
+    lg.print(clock, 20, 60)
 end
 
 function Game_MT.keypressed(self, key)
