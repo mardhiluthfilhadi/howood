@@ -37,9 +37,12 @@ Game._canvas = lg.newCanvas(Game.width, Game.height)
 local Game_MT = {}
 Game_MT.__index = Game_MT
 
-function Game_MT.load(self)
+function Game_MT.clean_garbage(self)
+    for i=1,5 do collectgarbage("collect") end
     collectgarbage("stop")
+end
 
+function Game_MT.load(self)
     local fullscreen = OS == "Android" or  OS == "IOS"
     local resizable  = OS ~= "Android" and OS ~= "IOS"
     local sw,sh =
@@ -53,6 +56,7 @@ function Game_MT.load(self)
     })
 
     self.timer_a = love.timer.getTime()
+    self:clean_garbage()
 end
 
 function Game_MT.update(self, dt)
@@ -117,8 +121,8 @@ function Game_MT.draw(self)
     lg.print(clock, 20, 60)
 end
 
-function Game_MT.add_tree_log(self, x, y, length, wide)
-    local l = log.new(self,x,y,length,wide)
+function Game_MT.add_tree_log(self, tree, x, y, length, wide)
+    local l = log.new(self, tree, x,y,length,wide)
     table.insert(self.tree_logs, l)
     table.insert(self.entities, l)
 end

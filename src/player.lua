@@ -13,6 +13,7 @@ Player.target = vector.new()
 
 Player.game   = nil
 Player.mytree = nil
+Player.tree_logs = {}
 
 Player.health = 100
 Player.energy = 100
@@ -47,6 +48,25 @@ function Player_MT.update(self, dt)
     end
 
     self.mytree = nil
+
+    local log = nil
+    for _,it in ipairs(self.game.tree_logs) do
+        local abs_len = self.pos:distance(it.working_pos)
+        local log = (abs_len and abs_len < 10 and it.ready_to_pick ) and it
+        if log then
+            log.ready_to_pick = false
+            table.insert(self.tree_logs, log)
+            break
+        end
+    end
+
+    for _,it in ipairs(self.tree_logs) do
+        local x,y = self:get_bounds()
+        local offset = math.random()*5
+        it.pos.x = x
+        it.pos.y = y+offset
+    end
+    
     local abs_len = math.abs(
         self.pos:distance_squared(self.target)
     )

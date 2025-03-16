@@ -162,7 +162,7 @@ local function draw_trunk(self)
                     self.working_pos.x-base_len*2 or self.working_pos.x
 
                 self.game:add_tree_log(
-                    log_x, self.working_pos.y,
+                    self, log_x, self.working_pos.y,
                     base_len_p, base_wide*2
                 )
                 
