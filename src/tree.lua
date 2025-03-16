@@ -94,10 +94,6 @@ local function draw_trunk(self)
         
     p1:add(r1, r1)
 
-    local s = lg.getShader()
-
-    self.game.TREE_SHADER:send("angle", self.base_trunk_a)
-    lg.setShader(self.game.TREE_SHADER)
     if self.chopped < 1 then
         lg.polygon(
             "fill",
@@ -129,8 +125,6 @@ local function draw_trunk(self)
         r1:set_angle(angle+_90_DEG_ANGLE):set_length(base_wide)
         p1:add(r1, r1)
 
-        self.game.TREE_SHADER:send("angle", angle)
-        lg.setShader(self.game.TREE_SHADER)
         if i>self.chopped-1 then
             lg.polygon(
                 "fill",
@@ -154,7 +148,6 @@ local function draw_trunk(self)
             end
         end
 
-        lg.setShader(s)
         if i>self.fall_branch then
             draw_branch(p0, angle, base_len)
         end

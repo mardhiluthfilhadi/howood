@@ -47,27 +47,6 @@ function Game_MT.clean_garbage(self)
 end
 
 function Game_MT.load(self)
-    self.TREE_SHADER = lg.newShader([[
-        extern float angle;
-
-        vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) {
-            vec2 uv = screen_coords * 0.05;
-
-            float s = sin(angle);
-            float c = cos(angle);
-            uv = vec2(c * uv.x - s * uv.y, s * uv.x + c * uv.y);
-            
-            float grooves = abs(sin(uv.y * 30.0)) * 0.6;
-            float barkPattern = step(0.6, fract(uv.x + grooves));
-
-            vec3 darkBrown = vec3(0.3, 0.15, 0.1);
-            vec3 lightBrown = vec3(0.5, 0.3, 0.2);
-
-            vec3 treeBarkColor = mix(darkBrown, lightBrown, barkPattern);
-            return vec4(treeBarkColor, 1.0);
-        }
-    ]])
-
     local fullscreen = OS == "Android" or  OS == "IOS"
     local resizable  = OS ~= "Android" and OS ~= "IOS"
     local sw,sh =

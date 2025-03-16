@@ -52,21 +52,14 @@ function Player_MT.update(self, dt)
     local log = nil
     for _,it in ipairs(self.game.tree_logs) do
         local abs_len = self.pos:distance(it.working_pos)
-        local log = (abs_len < 10 and it.ready_to_pick ) and it
+        local log = (abs_len < 20 and it.ready_to_pick ) and it
         if log then
-            log.ready_to_pick = false
+            log:pick(self)
             table.insert(self.tree_logs, log)
             break
         end
     end
 
-    for _,it in ipairs(self.tree_logs) do
-        local x,y = self:get_bounds()
-        local offset = math.random()*5
-        it.pos.x = x
-        it.pos.y = y+offset
-    end
-    
     local abs_len = math.abs(
         self.pos:distance_squared(self.target)
     )
@@ -104,13 +97,7 @@ function Player_MT.on_keypressed(self, key)
     if key=="x" then
         for i=#self.tree_logs, 1, -1 do
             local it = table.remove(self.tree_logs, i)
-            it.ready_to_pick = true
-            it.pos.x = big_log_x
-            it.pos.y = big_log_y
-            it.working_pos.x = it.pos.x+it.length/2
-            it.working_pos.y = it.pos.y+it.wide/2
-
-            big_log_y = big_log_y - 2
+            it:put_down(big_log_x, big_log_y)
         end
     end
 end
