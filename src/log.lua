@@ -16,8 +16,17 @@ function Log_MT.update(self, dt)
 end
 
 function Log_MT.draw(self)
+    local s = lg.getShader()
+    
+    self.game.TREE_SHADER:send("angle", math.rad(0))
+    lg.setShader(self.game.TREE_SHADER)
     lg.setColor(1,1,1)
-    lg.rectangle("fill", self.pos.x, self.pos.y-self.wide, self.length, self.wide)
+
+    local x,y = self.pos.x, self.pos.y-self.wide
+    local w,h = self.length, self.wide
+    lg.rectangle("fill", x,y,w,h)
+
+    lg.setShader(s)
 end
 
 local function new(game, tree_parent, x, y, length, wide)
