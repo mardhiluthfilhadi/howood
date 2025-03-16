@@ -2,13 +2,12 @@ local vector = require "src.vector"
 
 local lg = love.graphics
 
-local _2RAD = math.pi/180
 local TREE_BASE_WID =   3
 local TREE_SEGMENTS =   7
 local TREE_BASE_LEN =  40
 local TREE_LEN_DEC1 = 0.7
 local TREE_LEN_DEC2 = 0.9
-local _90_DEG_ANGLE = -90*_2RAD
+local _90_DEG_ANGLE = math.rad(-90)
 
 local TREE_STAND   = 0
 local TREE_FALLEN  = 1
@@ -54,13 +53,12 @@ Tree_MT.__index = Tree_MT
 
 function Tree_MT.update(self, dt)
     if self.state==TREE_STAND and self.health <= 0 then
-        local d = (self.pos.x >= 200) and (-4*dt) or (4*dt)
-        self.base_trunk_a = self.base_trunk_a + d
+        self.base_trunk_a = self.base_trunk_a + self.falling_dir*dt*4
         
-        if (self.base_trunk_a >= -3*_2RAD and
-            10*_2RAD >= self.base_trunk_a) or
-           (self.base_trunk_a <= -177*_2RAD and
-            -190*_2RAD <= self.base_trunk_a)
+        if (self.base_trunk_a >= math.rad(-3) and
+            math.rad(10) >= self.base_trunk_a) or
+           (self.base_trunk_a <= math.rad(-177) and
+            math.rad(-190) <= self.base_trunk_a)
         then
             self.state = TREE_FALLEN
         end
@@ -84,7 +82,8 @@ local function draw_branch(p, angle, len)
 end
 
 local function draw_trunk(self)
-    local base_len  = TREE_BASE_LEN
+    local base_len   = TREE_BASE_LEN
+    local base_len_p = self.base_trunk_h
     local base_wide = TREE_BASE_WID
     local pool = _tree_vector_pool
 
@@ -133,7 +132,7 @@ local function draw_trunk(self)
         base_len = base_len * TREE_LEN_DEC1
         
         p1:clone(p0)
-        p0:sub(p1:set_angle(angle):set_length(base_len), p1)
+        p0:add(p1:set_angle(angle):set_length(base_len), p1)
 
         l0:set_angle(angle+_90_DEG_ANGLE):set_length(base_wide)
         p0:sub(l0,l0)
@@ -159,8 +158,17 @@ local function draw_trunk(self)
             )
 
             if self.dirty then
-                self.dirty = false
+                local log_x = (self.falling_dir<0) and
+                    self.working_pos.x-base_len*2 or self.working_pos.x
+
+                self.game:add_tree_log(
+                    log_x, self.working_pos.y,
+                    base_len_p, base_wide*2
+                )
+                
                 p0:clone(self.working_pos)
+                
+                self.dirty = false
             end
         end
 
@@ -168,6 +176,8 @@ local function draw_trunk(self)
         if i>self.fall_branch then
             draw_branch(p0, angle, base_len)
         end
+
+        base_len_p = base_len_p * TREE_LEN_DEC1
     end
 end
 
@@ -193,19 +203,23 @@ function Tree_MT.damage(self)
             self.state  = TREE_CHOPPED
             self.active = false
         end
+
     end
 end
 
-local function new(x,y,base_trunk_h)
+local function new(game, x,y,base_trunk_h)
     local base_dir = (math.random()>=0.5) and 1 or -1
     
-    local tree   = {}
+    local tree = {}
+    tree.game  = game
 
     tree.active  = true
     tree.state   = TREE_STAND
     tree.health  = 3
     tree.chopped = 0
     tree.fall_branch  = 0
+    tree.falling_dir = (x > game.width/2) and -1 or 1
+    
     tree.base_trunk_h = base_trunk_h
     tree.base_trunk_a = _90_DEG_ANGLE
 
@@ -215,13 +229,13 @@ local function new(x,y,base_trunk_h)
     tree.dirty = false
     tree.working_pos = tree.pos:clone()
     
-    local offset  = (15+math.random()*5 * _2RAD)*base_dir
+    local offset  = math.rad(5+math.random()*15)*base_dir
     local segment = vector.from_angle(offset)
     table.insert(tree.segments, segment)
 
     for i=1, TREE_SEGMENTS do
         base_dir = base_dir *-1
-        offset   = (15+math.random()*5 * _2RAD)*base_dir
+        offset   = math.rad(5+math.random()*15)*base_dir
         segment  = vector.from_angle(offset)
         
         table.insert(tree.segments, segment)

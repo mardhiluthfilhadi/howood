@@ -1,4 +1,6 @@
+local vector = require "src.vector"
 local tree = require "src.tree"
+local log = require "src.log"
 
 local le = love.event
 local ls = love.system
@@ -12,14 +14,19 @@ Game.width  = 600
 Game.height = 600
 
 Game.day      = 0
-Game.clock    = 23
+Game.clock    = 8
 Game.minutes  = 0
 Game.timer_a  = 0
 Game.hardness = 1
 
-Game.player   = require "src.player"
-Game.entities = {Game.player}
+Game.player = require "src.player"
 Game.player.game = Game
+
+Game.trees = {}
+Game.tree_logs = {}
+Game.tree_brances = {}
+
+Game.entities = {Game.player}
 
 Game._offsetx = 0
 Game._offsety = 0
@@ -106,8 +113,20 @@ function Game_MT.draw(self)
     lg.setColor(0,0,0,1)
     lg.print("Garbage: " .. collectgarbage("count"), 20, 20)
     lg.print("FPS: " .. love.timer.getFPS(), 20, 40)
-    local clock = string.format("Clock (%2d : %2d)", self.clock, self.minutes)
+    local clock = string.format("Clock (%02d : %02d)", self.clock, self.minutes)
     lg.print(clock, 20, 60)
+end
+
+function Game_MT.add_tree_log(self, x, y, length, wide)
+    local l = log.new(self,x,y,length,wide)
+    table.insert(self.tree_logs, l)
+    table.insert(self.entities, l)
+end
+
+function Game_MT.add_tree(self,x,y)
+    local t = tree.new(self, x,y, 40 + math.random()*40)
+    table.insert(self.trees, t)
+    table.insert(self.entities, t)
 end
 
 function Game_MT.keypressed(self, key)
@@ -119,10 +138,7 @@ function Game_MT.mousepressed(self, x, y, btn)
     y = (y - self._offsety) * self._world_to_screen
     
     if btn==1 then self.player:on_mousepressed(x,y) end
-    if btn==2 then
-        local t = tree.new(x,y, 40 + math.random()*40)
-        table.insert(self.entities, t)
-    end
+    if btn==2 then self:add_tree(x,y) end
 end
 
 setmetatable(Game, Game_MT)

@@ -36,8 +36,8 @@ end
 
 function Player_MT.update(self, dt)
     if self.pos == self.target then
-        for _,it in ipairs(self.game.entities) do
-            local abs_len = (self~=it) and self.pos:distance(it.working_pos)
+        for _,it in ipairs(self.game.trees) do
+            local abs_len = self.pos:distance(it.working_pos)
 
             self.mytree =
                 (abs_len and abs_len < 30 and it.active) and it or nil
